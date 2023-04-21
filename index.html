@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Snake Game 2.0</title>
+  </head>
+  <body>
+    <canvas id="snakeBoard" width="400" height="400"></canvas>
+    <h1>Score: <span id="scoreSpan">0</span></h1>
+
+    <script>
+      const snakeBoard = document.getElementById("snakeBoard");
+      const snakeBoard2d = snakeBoard.getContext("2d");
+      const scoreSpan = document.getElementById("scoreSpan");
+
+      let snake = [
+        { x: 200, y: 200 },
+        { x: 190, y: 200 },
+        { x: 180, y: 200 },
+        { x: 170, y: 200 },
+        { x: 160, y: 200 },
+      ];
+
+      let score = 0;
+      let dx = 10;
+      let dy = 0;
+      let pause = false;
+
+      function main() {
+        pause = false;
+
+        if (gameOver()) return;
+
+        setTimeout(function () {
+          displayBoard();
+          displayApple();
+          moveSnake();
+          displaySnake();
+          main();
+        }, 100);
+      }
+
+      main();
+      generateApple();
+
+      function displayBoard() {
+        snakeBoard2d.fillStyle = "cyan";
+        snakeBoard2d.strokeStyle = "black";
+        snakeBoard2d.fillRect(0, 0, snakeBoard.width, snakeBoard.height);
+        snakeBoard2d.strokeRect(0, 0, snakeBoard.width, snakeBoard.height);
+      }
+
+      function buildSnakePart(snakePart) {
+        snakeBoard2d.fillStyle = "lightgreen";
+        snakeBoard2d.strokeStyle = "green";
+        snakeBoard2d.fillRect(snakePart.x, snakePart.y, 10, 10);
+        snakeBoard2d.strokeRect(snakePart.x, snakePart.y, 10, 10);
+      }
+
+      function displaySnake() {
+        snake.forEach(buildSnakePart);
+      }
+
+      function moveSnake() {
+        const head = { x: snake[0].x + dx, y: snake[0].y + dy };
+        snake.unshift(head);
+
+        if (snake[0].x === appleX && snake[0].y === appleY) {
+          score += 10;
+          scoreSpan.innerHTML = score;
+          generateApple();
+        } else {
+          snake.pop();
+        }
+      }
+
+      function controlSnake(event) {
+        if (pause) {
+          return;
+        }
+        pause = true;
+
+        const leftKey = 37;
+        const upKey = 38;
+        const rightKey = 39;
+        const downKey = 40;
+
+        const movingLeft = dx === -10;
+        const movingUp = dy === -10;
+        const movingRight = dx === 10;
+        const movingDown = dy === 10;
+
+        if (event.keyCode === leftKey && !movingRight) {
+          dx = -10;
+          dy = 0;
+        }
+        if (event.keyCode === upKey && !movingDown) {
+          dx = 0;
+          dy = -10;
+        }
+        if (event.keyCode === rightKey && !movingLeft) {
+          dx = 10;
+          dy = 0;
+        }
+        if (event.keyCode === downKey && !movingUp) {
+          dx = 0;
+          dy = 10;
+        }
+      }
+
+      document.addEventListener("keydown", controlSnake);
+
+      function gameOver() {
+        for (let i = 1; i < snake.length; i++) {
+          if (snake[0].x === snake[i].x && snake[0].y === snake[i].y)
+            return true;
+        }
+
+        const hitLeft = snake[0].x < 0;
+        const hitTop = snake[0].y < 0;
+        const hitRight = snake[0].x > 390;
+        const hitBottom = snake[0].y > 390;
+
+        return hitLeft || hitTop || hitRight || hitBottom;
+      }
+
+      function generateApple() {
+        appleX = Math.round((Math.random() * 390) / 10) * 10;
+        appleY = Math.round((Math.random() * 390) / 10) * 10;
+
+        snake.forEach(function (snakePart) {
+          if (snakePart.x === appleX && snakePart.y === appleY) {
+            generateApple();
+          }
+        });
+      }
+
+      function displayApple() {
+        snakeBoard2d.fillStyle = "red";
+        snakeBoard2d.strokeStyle = "red";
+        snakeBoard2d.fillRect(appleX, appleY, 10, 10);
+        snakeBoard2d.strokeRect(appleX, appleY, 10, 10);
+      }
+    </script>
+  </body>
+</html>
